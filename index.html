@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FiyatLab – Rekabetçi Fiyat Analizi</title>
+
+<!-- PWA: telefona uygulama olarak kurulabilsin -->
+<meta name="theme-color" content="#111314">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FiyatLab">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect width='180' height='180' rx='38' fill='%23111314'/%3E%3Crect x='30' y='30' width='120' height='120' rx='20' fill='%23d42b2b'/%3E%3Ctext x='90' y='118' font-family='Arial' font-size='62' font-weight='900' fill='white' text-anchor='middle'%3EFL%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22FiyatLab%22%2C%22short_name%22%3A%22FiyatLab%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23111314%22%2C%22theme_color%22%3A%22%23111314%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D%2527http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2527%2520width%253D%2527512%2527%2520height%253D%2527512%2527%253E%253Crect%2520width%253D%2527512%2527%2520height%253D%2527512%2527%2520fill%253D%2527%2523111314%2527%252F%253E%253Crect%2520x%253D%252796%2527%2520y%253D%252796%2527%2520width%253D%2527320%2527%2520height%253D%2527320%2527%2520rx%253D%252748%2527%2520fill%253D%2527%2523d42b2b%2527%252F%253E%253Ctext%2520x%253D%2527256%2527%2520y%253D%2527336%2527%2520font-family%253D%2527Arial%2527%2520font-size%253D%2527170%2527%2520font-weight%253D%2527900%2527%2520fill%253D%2527white%2527%2520text-anchor%253D%2527middle%2527%253EFL%253C%252Ftext%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg:        #111314;
+    --surface:   #1a1d1f;
+    --card:      #222628;
+    --border:    #2e3235;
+    --red:       #d42b2b;
+    --red-dim:   #8b1a1a;
+    --green:     #22c55e;
+    --amber:     #f59e0b;
+    --text:      #e8eaed;
+    --muted:     #6b7280;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Inter', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+  }
+  .logo-mark {
+    background: var(--red);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 900;
+    padding: 3px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .icon-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 32px; height: 32px;
+    border-radius: 7px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .icon-btn:hover { border-color: var(--red); color: var(--red); }
+  .sync-badge {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 20px;
+    color: var(--muted);
+  }
+  .sync-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s;
+  }
+  .sync-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .sync-dot.saving { background: var(--amber); }
+  .sync-dot.err { background: var(--red); }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 20px;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 780px) {
+    .container { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .card-header .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+  }
+  .card-body { padding: 18px; }
+
+  .form-group { margin-bottom: 14px; }
+  label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 5px;
+    letter-spacing: 0.03em;
+  }
+  input[type="text"], input[type="number"], select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 0.88rem;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus { border-color: var(--red); }
+  input[type="number"] { font-family: var(--mono); }
+  .input-prefix {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .input-prefix:focus-within { border-color: var(--red); }
+  .input-prefix span {
+    padding: 9px 10px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    border-right: 1px solid var(--border);
+    background: var(--card);
+    font-family: var(--mono);
+  }
+  .input-prefix input {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+  }
+  .input-prefix input:focus { border: none; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    font-family: var(--sans);
+  }
+  .btn-primary {
+    background: var(--red);
+    color: #fff;
+    width: 100%;
+    padding: 11px;
+    font-size: 0.9rem;
+  }
+  .btn-primary:hover { background: #b82424; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+  .btn-danger-ghost {
+    background: transparent;
+    color: var(--red);
+    border: 1px solid var(--red-dim);
+    padding: 5px 10px;
+    font-size: 0.75rem;
+  }
+  .btn-danger-ghost:hover { background: var(--red-dim); color: #fff; }
+
+  .competitor-add {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    align-items: end;
+    margin-bottom: 12px;
+  }
+  .competitor-list { display: flex; flex-direction: column; gap: 6px; }
+  .competitor-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 9px 12px;
+    gap: 10px;
+  }
+  .comp-name {
+    font-size: 0.82rem;
+    font-weight: 500;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .comp-price {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--amber);
+    white-space: nowrap;
+  }
+
+  .analysis-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .stat-label {
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .stat-sub {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .band-section { margin-bottom: 18px; }
+  .band-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .price-bar-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .bar-track {
+    position: relative;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    margin: 28px 0 22px;
+  }
+  .bar-fill {
+    position: absolute;
+    top: 0; bottom: 0;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #22c55e, #f59e0b);
+  }
+  .bar-pin {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+    cursor: help;
+  }
+  .bar-pin-label {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    white-space: nowrap;
+    color: var(--text);
+    background: var(--card);
+    padding: 2px 5px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+  .bar-pin-bottom {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .bar-legend {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  .tiers { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .tier {
+    border-radius: 8px;
+    padding: 12px 14px;
+    border: 1px solid;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .tier-economy { border-color: #2e5c3a; background: #1a2f20; }
+  .tier-standart { border-color: #3a4f1a; background: #222e10; }
+  .tier-premium  { border-color: #5c3a1a; background: #2f1e10; }
+  .tier-left { flex: 1; }
+  .tier-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 2px 7px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-bottom: 3px;
+  }
+  .badge-eco   { background: #22c55e22; color: #22c55e; }
+  .badge-std   { background: #84cc1622; color: #84cc16; }
+  .badge-prm   { background: #f59e0b22; color: #f59e0b; }
+  .tier-desc { font-size: 0.78rem; color: var(--muted); }
+  .tier-price {
+    font-family: var(--mono);
+    font-size: 1.05rem;
+    font-weight: 700;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .tier-margin {
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    margin-bottom: 14px;
+  }
+  .comp-table th {
+    text-align: left;
+    padding: 7px 10px;
+    color: var(--muted);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+  .comp-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+  }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .diff-pos { color: #22c55e; }
+  .diff-neg { color: var(--red); }
+
+  .product-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .tab-chip {
+    font-size: 0.73rem;
+    padding: 5px 9px 5px 11px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tab-chip:hover { border-color: var(--red); color: var(--text); }
+  .tab-chip.active { background: var(--red); border-color: var(--red); color: #fff; }
+  .tab-chip.active .chip-time { color: rgba(255,255,255,0.8) !important; }
+  .chip-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    line-height: 1.3;
+  }
+  .chip-thumb {
+    width: 26px; height: 26px;
+    border-radius: 5px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .chip-time {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.02em;
+  }
+  .stale-fresh { color: #22c55e; }
+  .stale-mid   { color: #f59e0b; }
+  .stale-old   { color: var(--red); }
+  .tab-chip .del {
+    opacity: 0.5;
+    font-size: 0.85rem;
+    line-height: 1;
+  }
+  .tab-chip .del:hover { opacity: 1; }
+
+  .empty {
+    text-align: center;
+    padding: 36px 20px;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 2rem; margin-bottom: 8px; opacity: 0.4; }
+  .empty-text { font-size: 0.82rem; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 14px 0;
+  }
+
+  .chip {
+    display: inline-block;
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .chip-green  { background: #22c55e22; color: #22c55e; }
+  .chip-amber  { background: #f59e0b22; color: #f59e0b; }
+
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  select option { background: var(--card); }
+  .section-stack { display: flex; flex-direction: column; gap: 16px; }
+
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    transition: opacity 0.4s;
+  }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .help-note {
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 11px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  /* ── Görsel alanı ── */
+  .photo-zone {
+    position: relative;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .photo-zone:hover { border-color: var(--red); }
+  .photo-zone img {
+    width: 100%;
+    height: 160px;
+    object-fit: contain;
+    background: #0c0d0e;
+  }
+  .photo-icon { font-size: 1.6rem; opacity: 0.5; margin-bottom: 4px; }
+  .photo-text { font-size: 0.75rem; color: var(--muted); }
+  #photoPlaceholder { text-align: center; padding: 18px; }
+  .photo-remove {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid var(--border);
+    color: #fff;
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .photo-remove:hover { background: var(--red); }
+
+  /* ── Müşteriye söyle ── */
+  .customer-price {
+    background: linear-gradient(135deg, #1a2f20, #14241a);
+    border: 1.5px solid #2e5c3a;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .cp-left { flex: 1; }
+  .cp-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #22c55e;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .cp-hint { font-size: 0.74rem; color: var(--muted); }
+  .cp-price {
+    font-family: var(--mono);
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .cp-photo {
+    width: 60px; height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<header>
+  <div class="logo">
+    <span class="logo-mark">FL</span>
+    FiyatLab
+  </div>
+  <div class="header-right">
+    <button class="icon-btn" onclick="exportData()" title="Yedek Al">⭳</button>
+    <button class="icon-btn" onclick="document.getElementById('importFile').click()" title="Yedek Yükle">⭱</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+    <div class="sync-badge">
+      <span class="sync-dot" id="syncDot"></span>
+      <span id="syncText">Bağlanıyor…</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <!-- SOL KOLON -->
+  <div class="section-stack">
+
+    <div class="card">
+      <div class="card-header"><span class="dot"></span> Ürün Bilgisi</div>
+      <div class="card-body">
+        <div id="productTabsWrap" style="display:none">
+          <div class="form-group">
+            <label>Kayıtlı Ürünler · 🟢 güncel · 🟡 2 hafta+ · 🔴 1 ay+</label>
+            <div class="product-tabs" id="productTabs"></div>
+          </div>
+          <hr class="divider">
+        </div>
+
+        <div class="form-group">
+          <label>Ürün Adı / Kodu</label>
+          <input type="text" id="productName" placeholder="örn. Hilti TE 6-A36 Kırıcı Delici">
+        </div>
+
+        <div class="form-group">
+          <label>Ürün Görseli (isteğe bağlı)</label>
+          <div class="photo-zone" id="photoZone" onclick="document.getElementById('photoInput').click()">
+            <img id="photoPreview" style="display:none">
+            <div id="photoPlaceholder">
+              <div class="photo-icon">📷</div>
+              <div class="photo-text">Fotoğraf çek veya seç</div>
+            </div>
+            <button class="photo-remove" id="photoRemove" style="display:none" onclick="event.stopPropagation();removePhoto()">✕</button>
+          </div>
+          <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(event)">
+        </div>
+        <div class="form-group">
+          <label>Kategori</label>
+          <select id="productCategory">
+            <option value="">Seç...</option>
+            <option>El Aletleri</option>
+            <option>Elektrikli Aletler</option>
+            <option>Bağlantı Elemanları</option>
+            <option>Yapı Kimyasalları</option>
+            <option>Hırdavat</option>
+            <option>Boya & Kaplama</option>
+            <option>Diğer</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Alış Fiyatı ₺</label>
+          <div class="input-prefix">
+            <span>₺</span>
+            <input type="number" id="costPrice" placeholder="0.00" min="0" step="0.01">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="dot"></span> Rakip Fiyatları</div>
+      <div class="card-body">
+        <div class="competitor-add">
+          <div class="form-group" style="margin:0">
+            <label>Firma / Platform</label>
+            <input type="text" id="compName" placeholder="örn. Trendyol">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Liste Fiyatı ₺</label>
+            <div class="input-prefix">
+              <span>₺</span>
+              <input type="number" id="compPrice" placeholder="0.00" min="0" step="0.01">
+            </div>
+          </div>
+          <button class="btn btn-ghost" onclick="addCompetitor()">+ Ekle</button>
+        </div>
+        <div class="competitor-list" id="compList">
+          <div class="empty" id="compEmpty">
+            <div class="empty-icon">🏪</div>
+            <div class="empty-text">Henüz rakip eklenmedi</div>
+          </div>
+        </div>
+        <hr class="divider">
+        <button class="btn btn-primary" onclick="analyze()">
+          ⚡ Analiz Yap & Buluta Kaydet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAĞ KOLON -->
+  <div class="section-stack">
+    <div id="resultPanel">
+      <div class="card">
+        <div class="card-body">
+          <div class="empty" style="padding: 60px 20px">
+            <div class="empty-icon">📊</div>
+            <div class="empty-text">Sol taraftan ürün bilgilerini ve rakip fiyatlarını girerek analiz başlatın.<br><br>Kaydettiğiniz ürünler bu cihazın kendi hafızasına yazılır — internet olmasa bile çalışır. Sağ üstteki butonlarla yedek alabilirsiniz.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── State ──
+let competitors = [];
+let savedProducts = [];
+let currentPhoto = null;
+const STORAGE_KEY = 'fiyatlab:products';
+
+// ── Görsel ──
+function handlePhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      // Küçült: en fazla 600px, hafıza dostu
+      const max = 600;
+      let { width, height } = img;
+      if (width > height && width > max) { height = height * max / width; width = max; }
+      else if (height > max) { width = width * max / height; height = max; }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      currentPhoto = canvas.toDataURL('image/jpeg', 0.7);
+      showPhoto(currentPhoto);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function showPhoto(dataUrl) {
+  const prev = document.getElementById('photoPreview');
+  prev.src = dataUrl;
+  prev.style.display = 'block';
+  document.getElementById('photoPlaceholder').style.display = 'none';
+  document.getElementById('photoRemove').style.display = 'flex';
+}
+
+function removePhoto() {
+  currentPhoto = null;
+  document.getElementById('photoPreview').style.display = 'none';
+  document.getElementById('photoPlaceholder').style.display = 'block';
+  document.getElementById('photoRemove').style.display = 'none';
+}
+
+// ── Cihaz Hafızası (telefon/bilgisayarın kendi belleği) ──
+async function loadProducts() {
+  setSync('saving', 'Yükleniyor…');
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    savedProducts = raw ? JSON.parse(raw) : [];
+    setSync('ok', 'Cihazda kayıtlı');
+  } catch (e) {
+    savedProducts = [];
+    setSync('ok', 'Cihazda kayıtlı');
+  }
+  renderSavedProducts();
+}
+
+async function saveProducts() {
+  setSync('saving', 'Kaydediliyor…');
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedProducts));
+    setSync('ok', 'Kaydedildi ✓');
+    return true;
+  } catch (e) {
+    setSync('err', 'Kayıt hatası');
+    toast('⚠ Kaydedilemedi. Cihaz hafızası dolu olabilir.');
+    return false;
+  }
+}
+
+function setSync(state, text) {
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  dot.className = 'sync-dot ' + (state === 'ok' ? 'ok' : state === 'saving' ? 'saving' : state === 'err' ? 'err' : '');
+  txt.textContent = text;
+}
+
+// ── Competitor ──
+function addCompetitor() {
+  const name = document.getElementById('compName').value.trim();
+  const price = parseFloat(document.getElementById('compPrice').value);
+  if (!name || isNaN(price) || price <= 0) {
+    toast('⚠ Firma adı ve geçerli bir fiyat girin.');
+    return;
+  }
+  competitors.push({ name, price });
+  document.getElementById('compName').value = '';
+  document.getElementById('compPrice').value = '';
+  document.getElementById('compName').focus();
+  renderCompetitors();
+}
+
+function removeCompetitor(i) {
+  competitors.splice(i, 1);
+  renderCompetitors();
+}
+
+function renderCompetitors() {
+  const list = document.getElementById('compList');
+  const empty = document.getElementById('compEmpty');
+  if (competitors.length === 0) {
+    list.innerHTML = '';
+    list.appendChild(empty);
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = competitors.map((c, i) => `
+    <div class="competitor-row">
+      <span class="comp-name">${esc(c.name)}</span>
+      <span class="comp-price">₺${fmt(c.price)}</span>
+      <button class="btn btn-danger-ghost" onclick="removeCompetitor(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+// ── Analiz ──
+async function analyze() {
+  const name = document.getElementById('productName').value.trim();
+  const costRaw = parseFloat(document.getElementById('costPrice').value);
+  const category = document.getElementById('productCategory').value;
+
+  if (!name) { toast('⚠ Ürün adı girin.'); return; }
+  if (isNaN(costRaw) || costRaw <= 0) { toast('⚠ Geçerli bir alış fiyatı girin.'); return; }
+  if (competitors.length === 0) { toast('⚠ En az bir rakip fiyatı ekleyin.'); return; }
+
+  const prices = competitors.map(c => c.price);
+  const minP = Math.min(...prices);
+  const maxP = Math.max(...prices);
+  const avgP = prices.reduce((a, b) => a + b, 0) / prices.length;
+  const medianP = median(prices);
+
+  // Rekabetçi fiyat alışın altına düşmesin
+  const economyPrice = Math.max(costRaw, minP * 0.95);
+  const standartPrice = avgP * 0.97;
+  const premiumPrice = maxP * 0.98;
+
+  const ecoMargin = marginPct(costRaw, economyPrice);
+  const stdMargin = marginPct(costRaw, standartPrice);
+  const prmMargin = marginPct(costRaw, premiumPrice);
+
+  // Cihaza kaydet
+  const product = { name, category, costRaw, competitors: [...competitors], photo: currentPhoto, updatedAt: Date.now() };
+  const existing = savedProducts.findIndex(p => p.name === name);
+  if (existing >= 0) savedProducts[existing] = product;
+  else savedProducts.push(product);
+  await saveProducts();
+  renderSavedProducts();
+
+  renderResult({ name, category, costRaw, minP, maxP, avgP, medianP,
+                 economyPrice, standartPrice, premiumPrice, ecoMargin, stdMargin, prmMargin, photo: currentPhoto });
+  toast('✓ Analiz tamamlandı ve kaydedildi');
+}
+
+function renderResult(d) {
+  document.getElementById('resultPanel').innerHTML = `
+    <div class="card">
+      <div class="card-header"><span class="dot"></span> ${esc(d.name)} ${d.category ? '– ' + esc(d.category) : ''}</div>
+      <div class="card-body">
+
+        <div class="customer-price">
+          ${d.photo ? `<img src="${d.photo}" class="cp-photo">` : ''}
+          <div class="cp-left">
+            <div class="cp-label">💬 Müşteriye Söyle</div>
+            <div class="cp-hint">Pazara uygun, makul satış fiyatı</div>
+          </div>
+          <div class="cp-price">₺${fmt(roundNice(d.standartPrice))}</div>
+        </div>
+
+        <div class="analysis-top">
+          <div class="stat-box">
+            <div class="stat-label">Alış Fiyatı</div>
+            <div class="stat-value" style="color:#6b7280">₺${fmt(d.costRaw)}</div>
+            <div class="stat-sub">maliyet</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Pazar Ort.</div>
+            <div class="stat-value" style="color:var(--amber)">₺${fmt(d.avgP)}</div>
+            <div class="stat-sub">Medyan: ₺${fmt(d.medianP)}</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Min – Maks</div>
+            <div class="stat-value" style="color:var(--green); font-size:0.95rem">
+              ₺${fmt(d.minP)} – ₺${fmt(d.maxP)}
+            </div>
+            <div class="stat-sub">Aralık: ₺${fmt(d.maxP - d.minP)}</div>
+          </div>
+        </div>
+
+        <div class="band-section">
+          <div class="band-title">Pazar Fiyat Bandı</div>
+          <div class="price-bar-wrap">
+            ${renderBar(d.minP, d.maxP, d.economyPrice, d.standartPrice, d.premiumPrice)}
+            <div class="bar-legend">
+              <span>₺${fmt(d.minP)} (min)</span>
+              <span>₺${fmt(d.maxP)} (maks)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="band-title">Önerilen Fiyat Stratejileri</div>
+        <div class="tiers">
+          <div class="tier tier-economy">
+            <div class="tier-left">
+              <span class="tier-badge badge-eco">Rekabetçi</span>
+              <div class="tier-desc">Piyasanın en düşüğüne yakın. Hacim satışı için ideal.</div>
+            </div>
+            <div>
+              <div class="tier-price" style="color:#22c55e">₺${fmt(d.economyPrice)}</div>
+              <div class="tier-margin">Marj %${d.ecoMargin.toFixed(1)}</div>
+            </div>
+          </div>
+          <div class="tier tier-standart">
+            <div class="tier-left">
+              <span class="tier-badge badge-std">Standart</span>
+              <div class="tier-desc">Pazar ortalamasının hemen altı. Dengeli strateji.</div>
+            </div>
+            <div>
+              <div class="tier-price" style="color:#84cc16">₺${fmt(d.standartPrice)}</div>
+              <div class="tier-margin">Marj %${d.stdMargin.toFixed(1)}</div>
+            </div>
+          </div>
+          <div class="tier tier-premium">
+            <div class="tier-left">
+              <span class="tier-badge badge-prm">Premium</span>
+              <div class="tier-desc">Piyasanın üst bandı. Marka değeri / servis için.</div>
+            </div>
+            <div>
+              <div class="tier-price" style="color:#f59e0b">₺${fmt(d.premiumPrice)}</div>
+              <div class="tier-margin">Marj %${d.prmMargin.toFixed(1)}</div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+        <div class="band-title">Rakip Karşılaştırma Tablosu</div>
+        <table class="comp-table">
+          <thead>
+            <tr>
+              <th>Firma / Platform</th>
+              <th>Liste Fiyatı</th>
+              <th>Alışa Göre</th>
+              <th>Ortalamaya Göre</th>
+              <th>Değerlendirme</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${competitors.map(c => {
+              const vsAlis = ((c.price - d.costRaw) / d.costRaw * 100);
+              const vsAvg  = ((c.price - d.avgP) / d.avgP * 100);
+              const badge = c.price <= d.minP * 1.05 ? '<span class="chip chip-green">En Ucuz Grup</span>'
+                           : c.price >= d.maxP * 0.95 ? '<span class="chip chip-amber">Pahalı Grup</span>'
+                           : '<span class="chip" style="background:#3a3a1a;color:#facc15">Ortalama</span>';
+              return `<tr>
+                <td style="font-family:var(--sans);font-weight:500">${esc(c.name)}</td>
+                <td>₺${fmt(c.price)}</td>
+                <td class="${vsAlis >= 0 ? 'diff-pos' : 'diff-neg'}">%${vsAlis >= 0 ? '+' : ''}${vsAlis.toFixed(1)}</td>
+                <td class="${vsAvg >= 0 ? 'diff-pos' : 'diff-neg'}">%${vsAvg >= 0 ? '+' : ''}${vsAvg.toFixed(1)}</td>
+                <td>${badge}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+  `;
+}
+
+function renderBar(min, max, eco, std, prm) {
+  const range = max - min || 1;
+  const pct = v => Math.min(100, Math.max(0, ((v - min) / range) * 100));
+  const fillL = pct(eco);
+  const fillR = pct(prm);
+  const pins = [
+    { v: eco, color: '#22c55e', label: `₺${fmt(eco)}`, bottom: 'Rekabetçi' },
+    { v: std, color: '#84cc16', label: `₺${fmt(std)}`, bottom: 'Standart' },
+    { v: prm, color: '#f59e0b', label: `₺${fmt(prm)}`, bottom: 'Premium' },
+  ];
+  return `
+    <div class="bar-track">
+      <div class="bar-fill" style="left:${fillL}%;right:${100 - fillR}%"></div>
+      ${pins.map(p => `
+        <div class="bar-pin" style="left:${pct(p.v)}%;background:${p.color}">
+          <div class="bar-pin-label">${p.label}</div>
+          <div class="bar-pin-bottom">${p.bottom}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ── Kayıtlı ürünler ──
+function renderSavedProducts() {
+  const wrap = document.getElementById('productTabsWrap');
+  const tabs = document.getElementById('productTabs');
+  if (savedProducts.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  tabs.innerHTML = savedProducts.map((p, i) => `
+    <span class="tab-chip" onclick="loadProduct(${i})">
+      ${p.photo ? `<img src="${p.photo}" class="chip-thumb">` : ''}
+      <span class="chip-main">
+        ${esc(p.name.slice(0, 22))}${p.name.length > 22 ? '…' : ''}
+        <span class="chip-time ${staleClass(p.updatedAt)}">${timeAgo(p.updatedAt)}</span>
+      </span>
+      <span class="del" onclick="event.stopPropagation();deleteProduct(${i})">✕</span>
+    </span>
+  `).join('');
+}
+
+function loadProduct(i) {
+  const p = savedProducts[i];
+  document.getElementById('productName').value = p.name;
+  document.getElementById('productCategory').value = p.category || '';
+  document.getElementById('costPrice').value = p.costRaw;
+  competitors = [...p.competitors];
+  currentPhoto = p.photo || null;
+  if (currentPhoto) showPhoto(currentPhoto); else removePhoto();
+  renderCompetitors();
+  document.querySelectorAll('.tab-chip').forEach((el, idx) => el.classList.toggle('active', idx === i));
+  toast(`📂 "${p.name}" yüklendi`);
+}
+
+async function deleteProduct(i) {
+  const name = savedProducts[i].name;
+  savedProducts.splice(i, 1);
+  await saveProducts();
+  renderSavedProducts();
+  toast(`🗑 "${name}" silindi`);
+}
+
+// ── Yedekleme ──
+function exportData() {
+  if (savedProducts.length === 0) { toast('⚠ Yedeklenecek ürün yok.'); return; }
+  const blob = new Blob([JSON.stringify(savedProducts, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `fiyatlab-yedek-${d}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('⭳ Yedek dosyası indirildi');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error('geçersiz format');
+      // Mevcutlarla birleştir (aynı isim üzerine yazılır)
+      data.forEach(np => {
+        const idx = savedProducts.findIndex(p => p.name === np.name);
+        if (idx >= 0) savedProducts[idx] = np;
+        else savedProducts.push(np);
+      });
+      await saveProducts();
+      renderSavedProducts();
+      toast(`⭱ ${data.length} ürün yüklendi`);
+    } catch (err) {
+      toast('⚠ Dosya okunamadı. Geçerli bir yedek dosyası seçin.');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ── Helpers ──
+function fmt(n) {
+  return Number(n).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function marginPct(cost, sell) { return ((sell - cost) / sell * 100); }
+function roundNice(n) {
+  // Tezgahta söylemesi kolay yuvarlak fiyat
+  if (n < 50)   return Math.round(n);
+  if (n < 200)  return Math.round(n / 5) * 5;
+  if (n < 1000) return Math.round(n / 10) * 10;
+  if (n < 5000) return Math.round(n / 25) * 25;
+  return Math.round(n / 50) * 50;
+}
+function median(arr) {
+  const s = [...arr].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function timeAgo(ts) {
+  if (!ts) return 'tarih yok';
+  const diff = Date.now() - ts;
+  const min = Math.floor(diff / 60000);
+  const hr  = Math.floor(diff / 3600000);
+  const day = Math.floor(diff / 86400000);
+  if (min < 1) return 'az önce';
+  if (min < 60) return min + ' dk önce';
+  if (hr < 24) return hr + ' sa önce';
+  if (day === 1) return 'dün';
+  if (day < 30) return day + ' gün önce';
+  const mon = Math.floor(day / 30);
+  return mon + ' ay önce';
+}
+function staleClass(ts) {
+  if (!ts) return 'stale-old';
+  const day = (Date.now() - ts) / 86400000;
+  if (day > 30) return 'stale-old';
+  if (day > 14) return 'stale-mid';
+  return 'stale-fresh';
+}
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement.id === 'compPrice') addCompetitor();
+});
+
+// ── Başlat ──
+(async function init() {
+  await loadProducts();
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.style.opacity = '0';
+  setTimeout(() => overlay.style.display = 'none', 400);
+})();
+</script>
+</body>
+</html>
